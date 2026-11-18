@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "oma-docker"
+version = "0.1.0"
+description = "Gerenciador de Docker em TUI, uma tela por vez, para mouse e teclado"
+readme = "README.md"
+requires-python = ">=3.13"
+license = { text = "MIT" }
+authors = [{ name = "JCsvg" }]
+dependencies = [
+    "textual>=8.0,<9",
+    "docker>=7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.24"]
+
+[project.scripts]
+oma-docker = "oma_docker.app:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/oma_docker"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+pythonpath = ["src"]
+markers = ["docker: roda contra o Docker real (só leitura e recursos com rótulo oma-docker-test)"]
+addopts = "-m 'not docker'"
