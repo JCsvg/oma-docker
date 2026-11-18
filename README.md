@@ -4,7 +4,7 @@ TUI em Python (Textual) para gerenciar o Docker: containers, imagens, volumes,
 redes, projetos compose e limpeza, uma tela por vez, com mouse e teclado, em
 português do Brasil e nas cores do tema ativo do Omarchy.
 
-Versão 0.1.1.
+Versão 0.1.2.
 
 ## Capturas de tela
 
@@ -56,7 +56,7 @@ Para projetos compose, `docker-compose` (o app chama `docker compose`).
 ```bash
 cd packaging
 ./empacotar.sh              # gera o pacote em packaging/
-sudo pacman -U oma-docker-0.1.1-1-any.pkg.tar.zst
+sudo pacman -U oma-docker-0.1.2-1-any.pkg.tar.zst
 oma-docker
 ```
 
