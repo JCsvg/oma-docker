@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "oma-docker"
-version = "0.1.0"
+version = "0.1.1"
 description = "Gerenciador de Docker em TUI, uma tela por vez, para mouse e teclado"
 readme = "README.md"
 requires-python = ">=3.13"

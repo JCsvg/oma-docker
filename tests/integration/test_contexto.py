@@ -1,5 +1,6 @@
 import json
 import shutil
+import subprocess
 
 import pytest
 from textual.widgets import DataTable, Input
@@ -108,7 +109,7 @@ async def test_log_seguido_volta_ao_reabrir(estado, anexos):
     async with a.run_test(size=TAM) as pilot:
         aba = await abrir(a, pilot, "2", AbaContainers)
         await ir_para(pilot, aba, next(c.id for c in a.cliente.containers() if c.nome == "loja-api"))
-        await pilot.press("l")
+        await pilot.press("o")
         await pilot.pause(0.3)
         assert isinstance(a.screen, TelaLogs)
     b = novo(Estado(estado.pasta), anexos)
@@ -133,7 +134,7 @@ async def test_rascunho_volta_e_segredo_nao_e_gravado(estado, anexos):
     assert "MODO=a" in bruto
     b = novo(Estado(estado.pasta), anexos)
     async with b.run_test(size=TAM) as pilot:
-        assert await esperar(pilot, lambda: isinstance(b.screen, FormularioRodar))
+        assert await esperar(pilot, lambda: isinstance(b.screen, FormularioRodar) and len(b.screen.query("#imagem")) == 1)
         assert b.screen.query_one("#imagem", Input).value == "alpine:3.22"
         assert b.screen.query_one("#ambiente", Input).value == "MODO=a"
 
@@ -196,6 +197,7 @@ async def test_editar_arquivo_abre_nvim_e_sobrevive_ao_fechar(estado, anexos, tm
             assert b.tmux.tem_editor()
     finally:
         a.tmux.encerrar()
+        subprocess.run(["pkill", "-f", f"nvim --embed {tmp_path}"])
 
 
 async def test_editar_arquivo_inexistente_avisa(app):

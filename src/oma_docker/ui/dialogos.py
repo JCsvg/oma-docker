@@ -32,7 +32,8 @@ class Confirmar(NavegacaoMixin, ModalScreen[bool]):
     """Pede confirmação mostrando o que será afetado. Esc cancela. O foco começa em Cancelar."""
 
     DEFAULT_CSS = CSS_CAIXA.replace("{n}", "Confirmar") + "Confirmar #lista { max-height: 14; margin-bottom: 1; }"
-    BINDINGS = [Binding("escape", "cancelar", "Cancelar", show=False)]
+    BINDINGS = [Binding("escape", "cancelar", "Cancelar", show=False),
+                Binding("left,h", "app.botao(-1)", "Botão anterior", show=False), Binding("right,l", "app.botao(1)", "Próximo botão", show=False)]
 
     def __init__(self, titulo: str, itens: list[str], total: str = "", aviso: str = "", reforco: str = "",
                  rotulo: str = "Confirmar", perigoso: bool = True) -> None:
@@ -144,7 +145,8 @@ class TelaLogs(NavegacaoMixin, ModalScreen[None]):
     """Logs que seguem ao vivo. Pausar congela a tela (as linhas novas esperam na fila)."""
 
     DEFAULT_CSS = CSS_CAIXA.replace("{n}", "TelaLogs") + "TelaLogs #caixa { width: 96%; height: 94%; } TelaLogs RichLog { height: 1fr; border: tall $panel; }"
-    BINDINGS = [Binding("escape,q", "fechar", "Fechar", show=False), Binding("space", "alternar", "Pausar/seguir", show=False)]
+    BINDINGS = [Binding("escape,q", "fechar", "Fechar", show=False), Binding("space", "alternar", "Pausar/seguir", show=False),
+                Binding("left,h", "app.botao(-1)", "Botão anterior", show=False), Binding("right,l", "app.botao(1)", "Próximo botão", show=False)]
 
     def __init__(self, cliente, id: str, nome: str) -> None:
         super().__init__()

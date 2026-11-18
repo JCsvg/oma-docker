@@ -12,7 +12,7 @@ O app fala com `/var/run/docker.sock` pelo `docker` (docker-py, `APIClient`). O 
 
 ## 3. Estrutura da interface (decisão do agente)
 
-Uma tela por vez em `TabbedContent` (8 abas, teclas 1 a 8). Esquema de navegação copiado do omarchy-manager (`ui/navegacao.py`): Ctrl+j/k entre zonas, Ctrl+h/l entre botões, Ctrl+Enter aperta, Ctrl+Espaço ou F1 abre a ajuda, rodapé com no máximo 5 teclas. As setas ← → e Alt+h/l trocam de tela (a tela só tem um painel de lista, então "trocar de painel" vira "trocar de tela"). Ao entrar numa tela sem lista, o foco vai para o primeiro botão, nunca para o campo de filtro (o campo engoliria as teclas de atalho).
+Uma tela por vez em `TabbedContent` (8 abas, teclas 1 a 8). Esquema de navegação copiado do omarchy-manager (`ui/navegacao.py`): Ctrl+j/k entre zonas, Ctrl+h/l entre botões, Ctrl+Enter aperta, Ctrl+Espaço ou F1 abre a ajuda, rodapé com no máximo 5 teclas. Ao entrar numa tela sem lista, o foco vai para o primeiro botão, nunca para o campo de filtro (o campo engoliria as teclas de atalho).
 
 ## 4. Cores (decisão do agente)
 
@@ -55,3 +55,7 @@ Três grupos: unitários (modelos, tradução de erros, portas, estado, banner, 
 ## 12. Capturas de tela (decisão do agente)
 
 A tela do notebook (eDP-1) tem 1366x768 e não havia monitor externo ligado, então as capturas têm o tamanho da janela do foot nessa tela (1342x720), não 1620x980. Foram feitas com `--demo`, para não expor dados reais.
+
+## 13. Navegação: Alt nas abas, setas na página (pedido do JC, versão 0.1.1)
+
+Pedido do JC: a navegação do oma-docker parecida com a do omarchy-manager, em que as abas se trocam com Alt e as setas andam pela página. Na 0.1.0, ← → e Alt+h/l trocavam de aba. Na 0.1.1: abas só com Alt+←/→ e Alt+h/l (prioritários, valem com o foco num campo de texto), com as teclas 1 a 8 fora de campos de texto e o clique na aba. As setas sem Alt não trocam de aba: ↑↓ andam pelas fileiras da tela (filtro, botões da barra, lista, botões de ação; na borda da lista o foco passa à fileira vizinha), ←→ e h/l andam entre botões e cartões. No Resumo as setas percorrem a grade de cartões e os botões. Nos diálogos, ←→ e h/l trocam de botão, e no formulário ↑↓ trocam de campo. Por causa do `l` e do `h`, o atalho de logs de container passou de `l` para `o`. O rodapé passou a mostrar `Alt+←/→ Abas`.

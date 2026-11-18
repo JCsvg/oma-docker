@@ -4,7 +4,7 @@ TUI em Python (Textual) para gerenciar o Docker: containers, imagens, volumes,
 redes, projetos compose e limpeza, uma tela por vez, com mouse e teclado, em
 português do Brasil e nas cores do tema ativo do Omarchy.
 
-Versão 0.1.0.
+Versão 0.1.1.
 
 ## Capturas de tela
 
@@ -56,7 +56,7 @@ Para projetos compose, `docker-compose` (o app chama `docker compose`).
 ```bash
 cd packaging
 ./empacotar.sh              # gera o pacote em packaging/
-sudo pacman -U oma-docker-0.1.0-1-any.pkg.tar.zst
+sudo pacman -U oma-docker-0.1.1-1-any.pkg.tar.zst
 oma-docker
 ```
 
@@ -68,19 +68,23 @@ Cada tecla tem um botão clicável na mesma tela. O rodapé mostra no máximo 5 
 
 | Tecla | Ação | Equivalente com o mouse |
 |---|---|---|
-| `1` a `8`, `←` `→`, `Alt+h` `Alt+l` | trocar de tela | clicar na aba |
-| `↑` `↓` ou `j` `k` | mover na lista | clicar na linha |
+| `Alt+←` `Alt+→` ou `Alt+h` `Alt+l` | aba anterior e próxima (valem até com o foco num campo de texto) | clicar na aba |
+| `1` a `8` | ir direto para a aba (fora de campos de texto) | clicar na aba |
+| `↑` `↓` ou `j` `k` | linhas da lista; na borda da lista passa para o filtro ou para os botões | clicar na linha |
+| `←` `→` ou `h` `l` | entre botões, cartões e colunas da tela | clicar no botão |
 | `Enter` | detalhes do item | clicar de novo na linha |
 | `/` | filtrar | clicar no campo Filtrar |
 | `Ctrl+j` `Ctrl+k` | próxima e anterior seção | clicar |
-| `Ctrl+h` `Ctrl+l` | entre botões | clicar no botão |
+| `Ctrl+h` `Ctrl+l` ou `Ctrl+←` `Ctrl+→` | entre botões | clicar no botão |
 | `Ctrl+Enter` | aperta o botão em foco | clicar |
 | `Esc` | voltar para a lista, fechar diálogo | botão Cancelar ou Fechar |
 | `Ctrl+Espaço` ou `F1` | ajuda da tela | (aperte a tecla) |
 | `F5` | recarregar agora | |
 | `q` | sair | |
 
-Containers: `i` iniciar, `p` parar, `r` reiniciar, `z` pausar ou retomar, `x` remover, `l` logs, `e` estatísticas, `s` shell, `n` rodar novo, `f` só rodando ou todos, `g` agrupar.
+As setas sem Alt não trocam de aba: andam pela página, e dá para alcançar tudo da tela só com elas, sem Tab.
+
+Containers: `i` iniciar, `p` parar, `r` reiniciar, `z` pausar ou retomar, `x` remover, `o` logs, `e` estatísticas, `s` shell, `n` rodar novo, `f` só rodando ou todos, `g` agrupar.
 Imagens: `n` rodar, `b` baixar, `x` apagar, `u` só sem uso. Volumes: `c` criar, `x` apagar, `u` só sem uso. Redes: `c` criar, `x` apagar.
 Compose: `u` subir, `p` parar, `r` reiniciar, `e` editar, `t` terminal, `c` ver containers.
 Limpeza: `Espaço` marcar, `a` marcar tudo, `d` desmarcar, `x` apagar os marcados.

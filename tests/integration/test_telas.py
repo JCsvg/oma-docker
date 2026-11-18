@@ -23,7 +23,7 @@ async def test_abas_por_numero_seta_e_clique(app):
             assert abas.active == nome
         await pilot.press("1")
         await pilot.pause(0.1)
-        await pilot.press("right")
+        await pilot.press("alt+right")
         await pilot.pause(0.1)
         assert abas.active == "containers"
         await pilot.press("alt+h")
@@ -287,7 +287,7 @@ async def test_logs_ao_vivo_e_fechar(app, falso):
     async with app.run_test(size=TAM) as pilot:
         aba = await abrir(app, pilot, "2", AbaContainers)
         await ir_para(pilot, aba, cont(falso, "loja-api"))
-        await pilot.press("l")
+        await pilot.press("o")
         await pilot.pause(0.6)
         log = app.screen.query_one("#log")
         assert len(log.lines) >= 4
@@ -319,3 +319,90 @@ async def test_baixar_imagem_com_progresso(app, falso):
         await pilot.click("#ok")
         assert await esperar(pilot, lambda: ("baixar", "redis:8") in falso.chamadas)
         assert await esperar(pilot, lambda: "Pronto" in str(app.screen.query_one("#progresso").render()))
+
+
+async def test_setas_sem_alt_nao_trocam_de_aba(app):
+    async with app.run_test(size=TAM) as pilot:
+        abas = app.query_one("#abas", TabbedContent)
+        for n in ("1", "2", "3", "7"):
+            await pilot.press(n)
+            await pilot.pause(0.2)
+            alvo = abas.active
+            for k in ("left", "right", "h", "l", "up", "down"):
+                await pilot.press(k)
+                await pilot.pause(0.05)
+            assert abas.active == alvo
+
+
+async def test_alt_setas_valem_com_foco_em_campo_de_texto(app):
+    async with app.run_test(size=TAM) as pilot:
+        await abrir(app, pilot, "2", AbaContainers)
+        await pilot.press("slash")
+        assert isinstance(app.focused, Input)
+        await pilot.press("alt+right")
+        await pilot.pause(0.2)
+        assert app.aba_atual() == "imagens"
+        await pilot.press("alt+h")
+        await pilot.pause(0.2)
+        assert app.aba_atual() == "containers"
+
+
+async def test_numeros_nao_trocam_aba_dentro_de_campo(app):
+    async with app.run_test(size=TAM) as pilot:
+        await abrir(app, pilot, "2", AbaContainers)
+        await pilot.press("slash")
+        await pilot.press("3")
+        await pilot.pause(0.1)
+        assert app.aba_atual() == "containers"
+        assert app.query_one(AbaContainers).query_one("#filtro", Input).value == "3"
+
+
+async def alcancados(app, pilot, aba):
+    vistos = set()
+    macros = (["down"] * 14, ["right"] * 12, ["up"] * 14, ["right"] * 3, ["left"] * 5, ["down", "right"], ["up", "left", "left", "up", "down", "down"], ["down"] * 3, ["l"] * 12, ["k"] * 14)
+    for _ in range(1):
+        for m in macros:
+            for k in m:
+                await pilot.press(k)
+                f = app.focused
+                if f is not None:
+                    vistos.add(f)
+    return vistos
+
+
+async def test_setas_alcancam_todos_os_controles_de_cada_tela(app):
+    from textual.widgets import Button
+    async with app.run_test(size=TAM) as pilot:
+        for n in "12345678":
+            await pilot.press(n)
+            await pilot.pause(0.4)
+            aba = app.aba_widget()
+            await pilot.press("escape")
+            vistos = await alcancados(app, pilot, aba)
+            esperados = [w for w in aba.query("Button, Input, Tabela, Card") if w.display and w.focusable and w.region.area > 0]
+            faltam = [w for w in esperados if w not in vistos]
+            assert not faltam, (aba.NOME, faltam)
+            assert app.aba_atual() == aba.NOME
+
+
+async def test_setas_no_formulario_e_na_confirmacao(app, falso):
+    async with app.run_test(size=TAM) as pilot:
+        aba = await abrir(app, pilot, "2", AbaContainers)
+        await pilot.press("n")
+        await pilot.pause(0.2)
+        assert app.focused.id == "imagem"
+        await pilot.press("down")
+        assert app.focused.id == "nome"
+        for _ in range(8):
+            await pilot.press("down")
+        assert app.focused.id == "cancelar"
+        await pilot.press("right")
+        assert app.focused.id == "ok"
+        await pilot.press("escape")
+        await pilot.pause(0.1)
+        await ir_para(pilot, aba, cont(falso, "teste-rapido"))
+        await pilot.press("x")
+        await pilot.pause(0.1)
+        assert app.focused.id == "cancelar"
+        await pilot.press("l")
+        assert app.focused.id == "ok"

@@ -30,7 +30,9 @@ class FormularioRodar(NavegacaoMixin, ModalScreen["PedidoRodar | None"]):
     FormularioRodar Checkbox { height: 1; }
     FormularioRodar .botoes { margin-top: 1; }
     """
-    BINDINGS = [Binding("escape", "cancelar", "Cancelar", show=False)]
+    BINDINGS = [Binding("escape", "cancelar", "Cancelar", show=False),
+                Binding("up", "app.secao(-1)", "Campo anterior", show=False), Binding("down", "app.secao(1)", "Próximo campo", show=False),
+                Binding("left", "app.botao(-1)", "Botão anterior", show=False), Binding("right", "app.botao(1)", "Próximo botão", show=False)]
 
     def __init__(self, imagem: str = "", rascunho: dict | None = None) -> None:
         super().__init__()

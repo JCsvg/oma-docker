@@ -5,7 +5,7 @@
 # (extra/python-textual, extra/python-docker, extra/tmux); nada do AUR, nada vendorizado.
 
 pkgname=oma-docker
-pkgver=0.1.0
+pkgver=0.1.1
 pkgrel=1
 pkgdesc="Gerenciador de Docker em TUI, uma tela por vez, para mouse e teclado"
 arch=('any')

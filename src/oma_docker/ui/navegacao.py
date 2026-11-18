@@ -21,9 +21,11 @@ NOMES = {"question_mark": "?", "slash": "/", "space": "Espaço", "escape": "Esc"
          "left": "←", "right": "→", "up": "↑", "down": "↓"}
 
 COMUM = """[b]Navegação (igual em todas as telas)[/b]
-  ↑ ↓ / j k            linhas da lista
-  ← → / Alt+h Alt+l    tela anterior / próxima (ou clique)
-  1 a 8                ir direto para a tela
+  j k                  linhas da lista (igual a ↑ ↓)
+  Alt+← → / Alt+h Alt+l   aba anterior / próxima (ou clique na aba)
+  1 a 8                ir direto para a aba (fora de campos de texto)
+  ← → / h l            entre botões e colunas da tela
+  ↑ ↓                  sobe e desce pela tela; na borda da lista passa ao botão
   Enter                abrir detalhes do item
   /                    filtrar a lista
   Ctrl+j / Ctrl+k      próxima / anterior seção
@@ -165,10 +167,10 @@ class NavegacaoMixin:
     def acoes_do_rodape(self) -> list[str]:
         f = self._foco()
         if isinstance(f, Button):
-            return ["botao_acionar", "botao", "ajuda_aba"]
+            return ["botao_acionar", "botao(1)", "aba_relativa(1)", "ajuda_aba"]
         if isinstance(f, (Input, Select)):
-            return ["ajuda_aba"]
-        return list(self.RODAPE)[:4] + ["ajuda_aba"]
+            return ["aba_relativa(1)", "ajuda_aba"]
+        return list(self.RODAPE)[:3] + ["aba_relativa(1)", "ajuda_aba"]
 
     def texto_ajuda(self) -> str:
         linhas = []

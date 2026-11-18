@@ -14,6 +14,7 @@ def tmux(tmp_path):
     t = Tmux(tmp_path / "t.sock")
     yield t
     t.encerrar()
+    subprocess.run(["pkill", "-f", f"nvim --embed {tmp_path}"])  # o nvim deixa um processo --embed para trás
 
 
 def test_sessao_sobrevive_ao_app(tmux, tmp_path):

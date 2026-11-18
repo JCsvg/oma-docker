@@ -54,8 +54,8 @@ class OmaDockerApp(App[None]):
     BINDINGS = [
         Binding("q", "quit", "Sair"),
         *[Binding(str(n + 1), f"aba('{a[0]}')", a[1], show=False) for n, a in enumerate(ABAS)],
-        Binding("alt+l,alt+right", "aba_relativa(1)", "Próxima tela", key_display="Alt+L", priority=True),
-        Binding("alt+h,alt+left", "aba_relativa(-1)", "Tela anterior", key_display="Alt+H", priority=True),
+        Binding("alt+l,alt+right", "aba_relativa(1)", "Abas", key_display="Alt+←/→", priority=True),
+        Binding("alt+h,alt+left", "aba_relativa(-1)", "Aba anterior", key_display="Alt+←", priority=True, show=False),
         Binding("ctrl+right,ctrl+l", "botao(1)", "Próximo botão", key_display="Ctrl+→", priority=True),
         Binding("ctrl+left,ctrl+h", "botao(-1)", "Botão anterior", key_display="Ctrl+←", priority=True),
         Binding("ctrl+down,ctrl+j", "secao(1)", "Próxima seção", key_display="Ctrl+↓", priority=True),

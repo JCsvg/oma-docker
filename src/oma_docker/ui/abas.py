@@ -31,6 +31,31 @@ def B(tecla: str, acao: str, desc: str, **kw) -> Binding:
     return Binding(tecla, f"acao('{acao}')", desc, **kw)
 
 
+class Tabela(DataTable):
+    """Setas na borda da lista passam o foco para a zona vizinha, então tudo se alcança sem Tab."""
+
+    def _aba(self):
+        return next(a for a in self.ancestors if isinstance(a, AbaLista))
+
+    def action_cursor_up(self) -> None:
+        if self.cursor_row <= 0:
+            self._aba().vertical(-1)
+        else:
+            super().action_cursor_up()
+
+    def action_cursor_down(self) -> None:
+        if self.cursor_row >= self.row_count - 1:
+            self._aba().vertical(1)
+        else:
+            super().action_cursor_down()
+
+    def action_cursor_left(self) -> None:
+        self._aba().lado(-1)
+
+    def action_cursor_right(self) -> None:
+        self._aba().lado(1)
+
+
 class AbaLista(NavegacaoMixin, Vertical):
     """Base: filtro, tabela, estado vazio e fileira de botões. Os filhos dão colunas, dados e ações."""
 
@@ -43,8 +68,10 @@ class AbaLista(NavegacaoMixin, Vertical):
     BINDINGS = [
         Binding("j", "cursor(1)", "Descer", show=False),
         Binding("k", "cursor(-1)", "Subir", show=False),
-        Binding("right", "app.aba_relativa(1)", "Próxima tela", show=False),
-        Binding("left", "app.aba_relativa(-1)", "Tela anterior", show=False),
+        Binding("down", "vertical(1)", "Descer", show=False),
+        Binding("up", "vertical(-1)", "Subir", show=False),
+        Binding("right,l", "lado(1)", "Direita", show=False),
+        Binding("left,h", "lado(-1)", "Esquerda", show=False),
         Binding("slash", "buscar", "Filtrar", key_display="/"),
         Binding("enter", "acao('detalhes')", "Detalhes", show=False),
     ]
@@ -65,7 +92,7 @@ class AbaLista(NavegacaoMixin, Vertical):
         with Horizontal(id="barra"):
             yield Input(placeholder="Filtrar (tecla /)", id="filtro")
             yield from self.barra()
-        yield DataTable(id="tabela", cursor_type="row", zebra_stripes=False)
+        yield Tabela(id="tabela", cursor_type="row", zebra_stripes=False)
         yield Static("", id="vazio")
         with Horizontal(id="acoes"):
             for id_, rot in self.ACOES:
@@ -228,6 +255,48 @@ class AbaLista(NavegacaoMixin, Vertical):
             return
         t.action_cursor_down() if passo > 0 else t.action_cursor_up()
 
+    def linhas_de_foco(self) -> list[list]:
+        """Fileiras da tela, de cima para baixo: filtro, botões da barra, lista, botões de ação."""
+        def vivos(ws):
+            return [w for w in ws if w.display and w.focusable]
+        return [r for r in (vivos([self.query_one("#filtro", Input)]), vivos(self.query("#barra Button")),
+                            vivos([self.query_one("#tabela", DataTable)]), vivos(self.query("#acoes Button"))) if r]
+
+    def _posicao(self):
+        f = self.screen.focused
+        for r, fila in enumerate(self.linhas_de_foco()):
+            if f in fila:
+                return r, fila.index(f)
+        return -1, 0
+
+    def action_vertical(self, d: int) -> None:
+        self.vertical(d)
+
+    def action_lado(self, d: int) -> None:
+        self.lado(d)
+
+    def vertical(self, d: int) -> None:
+        linhas = self.linhas_de_foco()
+        r, i = self._posicao()
+        if r < 0:
+            self.focar_entrada()
+            return
+        nr = r + d
+        if 0 <= nr < len(linhas):
+            alvo = linhas[nr]
+            botoes = isinstance(alvo[0], Button) and isinstance(linhas[r][0], Button)
+            alvo[min(i, len(alvo) - 1) if botoes else 0].focus()
+
+    def lado(self, d: int) -> None:
+        linhas = self.linhas_de_foco()
+        r, i = self._posicao()
+        if r < 0:
+            self.focar_entrada()
+        elif len(linhas[r]) > 1:
+            linhas[r][max(0, min(len(linhas[r]) - 1, i + d))].focus()
+        else:
+            self.vertical(d)  # lista ou campo sozinho na fileira: segue para a fileira vizinha
+
     def action_acao(self, nome: str) -> None:
         f = getattr(self, f"acao_{nome}", None)
         if f:
@@ -275,8 +344,10 @@ class AbaResumo(NavegacaoMixin, Vertical):
         B("n", "rodar", "Rodar container"),
         B("b", "baixar", "Baixar imagem"),
         B("c", "limpeza", "Ir para a limpeza"),
-        Binding("right", "app.aba_relativa(1)", "Próxima tela", show=False),
-        Binding("left", "app.aba_relativa(-1)", "Tela anterior", show=False),
+        Binding("down,j", "mover(0,1)", "Descer", show=False),
+        Binding("up,k", "mover(0,-1)", "Subir", show=False),
+        Binding("right,l", "mover(1,0)", "Direita", show=False),
+        Binding("left,h", "mover(-1,0)", "Esquerda", show=False),
     ]
 
     def __init__(self) -> None:
@@ -391,8 +462,24 @@ class AbaResumo(NavegacaoMixin, Vertical):
         elif nome == "limpeza":
             self.app.action_aba("limpeza")
 
-    def action_cursor(self, passo: int) -> None:
-        self.mover_secao(passo)
+    def action_mover(self, dx: int, dy: int) -> None:
+        """Setas nos cartões (grade 3x2) e nos botões abaixo."""
+        cards, botoes = list(self.query(Card)), list(self.query("#acoes Button"))
+        f = self.screen.focused
+        if f in cards:
+            i = cards.index(f)
+            if dy > 0 and i + 3 >= len(cards):
+                botoes[min(i % 3, len(botoes) - 1)].focus()
+            else:
+                cards[max(0, min(len(cards) - 1, i + dx + 3 * dy))].focus()
+        elif f in botoes:
+            j = botoes.index(f)
+            if dy < 0:
+                cards[3 + min(j, 2)].focus()
+            elif dx:
+                botoes[max(0, min(len(botoes) - 1, j + dx))].focus()
+        else:
+            self.focar_entrada()
 
 
 # ------------------------------------------------------------ Containers
@@ -414,10 +501,10 @@ class AbaContainers(AbaLista):
     VAZIO = "Nenhum container ainda. Aperte n para rodar o primeiro a partir de uma imagem."
     RODAPE = ("acao('iniciar')", "acao('parar')", "acao('logs')", "acao('rodar')")
     ACOES = (("iniciar", "Iniciar (i)"), ("parar", "Parar (p)"), ("reiniciar", "Reiniciar (r)"), ("pausar", "Pausar (z)"),
-             ("remover", "Remover (x)"), ("logs", "Logs (l)"), ("stats", "Stats (e)"), ("shell", "Shell (s)"), ("rodar", "Novo (n)"))
+             ("remover", "Remover (x)"), ("logs", "Logs (o)"), ("stats", "Stats (e)"), ("shell", "Shell (s)"), ("rodar", "Novo (n)"))
     BINDINGS = AbaLista.BINDINGS + [
         B("i", "iniciar", "Iniciar"), B("p", "parar", "Parar"), B("r", "reiniciar", "Reiniciar"), B("z", "pausar", "Pausar/retomar"),
-        B("x", "remover", "Remover"), B("l", "logs", "Logs ao vivo"), B("e", "stats", "Estatísticas"),
+        B("x", "remover", "Remover"), B("o", "logs", "Logs ao vivo"), B("e", "stats", "Estatísticas"),
         B("s", "shell", "Abrir shell no container"), B("n", "rodar", "Rodar container novo"),
         B("f", "filtro", "Alternar só rodando / todos"), B("g", "agrupar", "Alternar agrupar por projeto"),
     ]
