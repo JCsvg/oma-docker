@@ -59,3 +59,13 @@ A tela do notebook (eDP-1) tem 1366x768 e não havia monitor externo ligado, ent
 ## 13. Navegação: Alt nas abas, setas na página (pedido do JC, versão 0.1.1)
 
 Pedido do JC: a navegação do oma-docker parecida com a do omarchy-manager, em que as abas se trocam com Alt e as setas andam pela página. Na 0.1.0, ← → e Alt+h/l trocavam de aba. Na 0.1.1: abas só com Alt+←/→ e Alt+h/l (prioritários, valem com o foco num campo de texto), com as teclas 1 a 8 fora de campos de texto e o clique na aba. As setas sem Alt não trocam de aba: ↑↓ andam pelas fileiras da tela (filtro, botões da barra, lista, botões de ação; na borda da lista o foco passa à fileira vizinha), ←→ e h/l andam entre botões e cartões. No Resumo as setas percorrem a grade de cartões e os botões. Nos diálogos, ←→ e h/l trocam de botão, e no formulário ↑↓ trocam de campo. Por causa do `l` e do `h`, o atalho de logs de container passou de `l` para `o`. O rodapé passou a mostrar `Alt+←/→ Abas`.
+
+## 14. Memória (decisão do agente, revisão preventiva)
+
+Medição com o app em `--demo` sob o pilot do Textual (VmRSS), 30 voltas de uso (trocar as 8 abas, abrir e fechar a tela de logs). Antes: 70 MB aquecido e 140 MB depois do uso, crescendo cerca de 1,2 MB por volta sem parar. Depois: 67 MB aquecido e 80 MB depois do uso, estável (o crescimento para em torno de 80 MB).
+
+- Causa do crescimento: o `RodapeEnxuto` recompõe a cada troca de aba e o `data_bind` do `FooterKey` (no rodapé padrão do Textual também) mantém cada tecla antiga viva, cerca de 65 widgets por volta. O rodapé agora define `compact` direto, sem `data_bind`, e desfaz o vínculo no ramo do rodapé padrão (diálogos).
+- A fila de logs pausada (`TelaLogs.fila`) tinha crescimento livre, agora `deque` com teto de 5000, igual ao `RichLog`.
+- `TelaStats` não empilha mais threads se o Docker demorar mais de 2 s (uma leitura por vez).
+- Já estava certo e não mudou: `docker` importado só ao criar o `ClienteSDK`, timers que só buscam com a aba visível e sem diálogo, logs com `max_lines=5000`, `ClienteSDK.fechar()` ao sair.
+- Teste `tests/integration/test_memoria.py`: falha se o RSS pós-uso passar de 160 MB (108 MB na suite inteira) ou crescer mais de 25 MB depois do aquecimento.

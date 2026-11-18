@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import threading
 import time
+from collections import deque
 
 from rich.text import Text
 from textual.app import ComposeResult
@@ -153,7 +154,7 @@ class TelaLogs(NavegacaoMixin, ModalScreen[None]):
         self.cliente, self.cid, self.nome = cliente, id, nome
         self.parar = threading.Event()
         self.pausado = False
-        self.fila: list[str] = []
+        self.fila: deque[str] = deque(maxlen=5000)  # mesmo teto do RichLog, a fila pausada não cresce sem fim
 
     def compose(self) -> ComposeResult:
         with Vertical(id="caixa"):
@@ -234,6 +235,9 @@ class TelaStats(NavegacaoMixin, ModalScreen[None]):
         self.set_interval(2, self._pedir)
 
     def _pedir(self) -> None:
+        if getattr(self, "_lendo", False):  # uma leitura por vez, senão threads se empilham se o Docker demorar
+            return
+        self._lendo = True
         threading.Thread(target=self._ler, daemon=True).start()
 
     def _ler(self) -> None:
@@ -248,6 +252,7 @@ class TelaStats(NavegacaoMixin, ModalScreen[None]):
                 t.append(v + "\n")
         except Exception as e:
             t = Text(traduzir(e), style="bold red")
+        self._lendo = False
         if self.vivo:
             try:
                 self.app.call_from_thread(self._mostrar, t)
